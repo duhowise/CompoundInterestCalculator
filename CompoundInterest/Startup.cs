@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using CompoundInterest.Domain;
+using CompoundInterest.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Converters;
 
 namespace CompoundInterest
 {
@@ -24,7 +24,15 @@ namespace CompoundInterest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddScoped<ILoanInterestBandService, InMemoryLoanInterestBandService>();
+            services.AddScoped<ILoanCalculatorService, LoanCalculatorService>();
+            services.AddSwaggerGen(c => {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Loan Calculator", Version = "v1" });
+            }); services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.PropertyNamingPolicy=JsonNamingPolicy.CamelCase;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,7 +42,11 @@ namespace CompoundInterest
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c => {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Loan Calculator");
 
+            });
             app.UseRouting();
 
             app.UseAuthorization();
