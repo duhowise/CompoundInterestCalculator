@@ -18,18 +18,22 @@ namespace CompoundInterest.Controllers
         {
             _loanCalculatorService = loanCalculatorService;
         }
-      [HttpGet("LoanAmountDue")]  public ActionResult CalculateLoanAmountDue(CustomerType customerType,decimal loanAmount,int tenure)
+
+        [HttpGet("LoanAmountDue")]
+        public ActionResult CalculateLoanAmountDue(CustomerType customerType, decimal loanAmount, int tenure)
         {
-            if (!Enum.IsDefined(typeof(CustomerType), customerType))
-                throw new InvalidEnumArgumentException(nameof(customerType), (int)customerType, typeof(CustomerType));
+            
+            if (!ModelState.IsValid|| !Enum.IsDefined(typeof(CustomerType), customerType)) return BadRequest("something went wrong. \n please check your input.");
+
             try
             {
                 var amountDue = _loanCalculatorService.CalculateLoanAmountDue(customerType, loanAmount, tenure);
-                if (amountDue==0)
+                if (amountDue == 0)
                 {
                     return BadRequest("something went wrong");
                 }
-                return Ok(new { amountDue,interest=(amountDue-loanAmount)});
+
+                return Ok(new {amountDue, interest = (amountDue - loanAmount)});
             }
             catch (ArgumentOutOfRangeException e)
             {
