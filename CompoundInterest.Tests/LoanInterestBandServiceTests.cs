@@ -20,6 +20,19 @@ namespace CompoundInterest.Tests
             services.AddScoped<ILoanInterestBandService, InMemoryLoanInterestBandService>();
             return services.BuildServiceProvider();
         }
+        static Action Constructor<T>(Func<T> func)
+        {
+            return () => func();
+        }
+
+        [Fact] public void LoanInterestBand_Throws_Exception_When_Initialized_With_Negative_Numbers()
+
+        {
+            Constructor(() => new LoanInterestBand(-1, -1, -1, -1)).Should().Throw<ArgumentException>();
+        }
+
+
+
         [Fact]
         public void Loan_Interest_Configuration_IsNotEmpty_And_Has_Five_Configurations()
         {
